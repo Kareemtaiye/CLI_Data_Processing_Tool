@@ -1,14 +1,3 @@
-"""
-AI/ML Salary Data CLI Tool
-Usage examples:
-    python salary_tool.py data.csv --summary
-    python salary_tool.py data.csv --filter experience_level=SE
-    python salary_tool.py data.csv --stats salary_in_usd
-    python salary_tool.py data.csv --top 5 salary_in_usd
-    python salary_tool.py data.csv --filter job_title=ML Engineer --export results.csv
-"""
-
-import argparse
 from html import parser
 from loader import load_csv
 from cmd_helper import (
@@ -17,41 +6,18 @@ from cmd_helper import (
     cmd_stats,
     cmd_summary,
     cmd_top,
-    compute_statistics,
 )
+from arg_parser import build_parser
 
-
-# Argument Parser
-def build_parser():
-    parser = argparse.ArgumentParser(
-        description="AI/ML Salary Dataset CLI Tool",
-        formatter_class=argparse.RawTextHelpFormatter,
-        epilog="""
-Examples:
-  python salary_tool.py data.csv --summary
-  python salary_tool.py data.csv --filter experience_level=SE
-  python salary_tool.py data.csv --filter job_title=ML Engineer
-  python salary_tool.py data.csv --stats salary_in_usd
-  python salary_tool.py data.csv --top 5 salary_in_usd
-  python salary_tool.py data.csv --filter experience_level=SE --export senior.csv
-        """,
-    )
-
-    parser.add_argument("file", help="Path to CSV file")
-    parser.add_argument(
-        "--summary", action="store_true", help="Show full dataset summary"
-    )
-    parser.add_argument(
-        "--filter", metavar="col=value", help="Filter rows by column=value"
-    )
-    parser.add_argument(
-        "--stats", metavar="column", help="Show stats for a numeric column"
-    )
-    parser.add_argument(
-        "--top", nargs=2, metavar=("N", "column"), help="Show top N rows by column"
-    )
-    parser.add_argument("--export", metavar="output.csv", help="Export results to CSV")
-    return parser
+"""
+AI/ML Salary Data CLI Tool
+Usage examples:
+    python salary_tool.py data.csv --summary
+    python salary_tool.py data.csv --filter experience_level=SE - EXTENDED: Now supports numeric comparison e.g salary_in_usd
+    python salary_tool.py data.csv --stats salary_in_usd
+    python salary_tool.py data.csv --top 5 salary_in_usd
+    python salary_tool.py data.csv --filter job_title=ML Engineer --export results.csv
+"""
 
 
 def main():

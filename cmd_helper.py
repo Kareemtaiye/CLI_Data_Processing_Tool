@@ -1,4 +1,5 @@
 import sys
+import csv
 from display_helper import print_divider, print_stats, fmt_usd
 from data_decoder import decode
 from stat_helper import compute_statistics, to_float
@@ -94,25 +95,57 @@ def cmd_summary(rows):
 def cmd_filter(rows, condition):
     """Filter rows by column=value condition"""
 
-    if "=" not in condition:
-        print("[ERROR] --filter format must be column=value. e.g experience_level=SE")
+    comparison_operators = [">=", "<=","<", "=", ">"]
+    found = False
+
+    for op in comparison_operators: # Extended it
+        if op in condition:
+            found = True
+            break
+        else:
+            continue
+
+    if not found:       
+        print(f"[ERROR] --filter format must be a numeric comparison or column=value for non-numeric values. e.g experience_level[{"|".join(comparison_operators)}]SE")
         sys.exit(1)
 
-    col, val = condition.split("=", 1)
+    print()
+    col, val = condition.split(op, 1)
     col = col.strip()
     val = val.strip()
 
     if rows and col not in rows[0]: #checks if rows(file) is empty or the column doesnt exist on any row(dict)
         print(f"[ERROR] Column '{col}' not found in available colum: ({", ".join(rows[0].keys())})")
         sys.exit(1)
+    
 
-    filtered = [r for r in rows if r.get(col, "").lower() == val.lower()]
+    #checking if using numeric operators for non numeric values
+    num_operators = [n for n in comparison_operators if n != "="]
+    
+    if op in num_operators and not to_float(val):
+        print(f"[ERROR] Numeric comparison on non-numeric value: {condition}")
+        sys.exit(1)
+
+    #Go on to filter
+    filtered = []
+    if op == ">=":
+        filtered = [r for r in rows if to_float(r.get(col)) >= to_float(val)]
+    elif op == "<=":
+        filtered = [r for r in rows if to_float(r.get(col)) <= to_float(val)]
+    elif op == ">":
+        filtered = [r for r in rows if to_float(r.get(col)) > to_float(val)]
+    elif op == "<":
+        filtered = [r for r in rows if to_float(r.get(col)) < to_float(val)]
+    else:
+        filtered = [r for r in rows if r.get(col, "").lower() == val.lower()] # for "="
+
+
     if not filtered:
-        print(f"[INFO] No record found for condition '{col}={val}'")
+        print(f"[INFO] No record found for condition '{col}{op}{val}'")
         return []
 
     print_divider("=")
-    print(f"[INFO] FILTER {col} = {val} ->  {len(filtered)} records")
+    print(f"[INFO] FILTER {col} {op} {val}  -->  {len(filtered)} records")
 
     #Matching rows
     for f in filtered:
